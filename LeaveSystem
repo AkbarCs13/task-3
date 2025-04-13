@@ -1,0 +1,109 @@
+import java.util.*;
+
+class Employee {
+    int id;
+    String name;
+    int leaveBalance;
+
+    public Employee(int id, String name, int leaveBalance) {
+        this.id = id;
+        this.name = name;
+        this.leaveBalance = leaveBalance;
+    }
+
+    public void displayInfo() {
+        System.out.println("ID: " + id + ", Name: " + name + ", Leave Balance: " + leaveBalance);
+    }
+}
+
+class LeaveRequest {
+    int requestId;
+    Employee employee;
+    int daysRequested;
+    String status; // Pending, Approved, Rejected
+
+    public LeaveRequest(int requestId, Employee employee, int daysRequested) {
+        this.requestId = requestId;
+        this.employee = employee;
+        this.daysRequested = daysRequested;
+        this.status = "Pending";
+    }
+
+    public void displayRequest() {
+        System.out.println("Request ID: " + requestId + ", Employee: " + employee.name + 
+                           ", Days Requested: " + daysRequested + ", Status: " + status);
+    }
+}
+
+class LeaveManager {
+    private Map<Integer, Employee> employees = new HashMap<>();
+    private List<LeaveRequest> requests = new ArrayList<>();
+    private int nextRequestId = 1;
+
+    public void addEmployee(Employee e) {
+        employees.put(e.id, e);
+    }
+
+    public void showEmployees() {
+        for (Employee e : employees.values()) {
+            e.displayInfo();
+        }
+    }
+
+    public void requestLeave(int empId, int days) {
+        Employee e = employees.get(empId);
+        if (e == null) {
+            System.out.println("Employee not found.");
+            return;
+        }
+        LeaveRequest lr = new LeaveRequest(nextRequestId++, e, days);
+        requests.add(lr);
+        System.out.println("Leave request submitted:");
+        lr.displayRequest();
+    }
+
+    public void processRequests() {
+        for (LeaveRequest lr : requests) {
+            if (lr.status.equals("Pending")) {
+                if (lr.employee.leaveBalance >= lr.daysRequested) {
+                    lr.status = "Approved";
+                    lr.employee.leaveBalance -= lr.daysRequested;
+                } else {
+                    lr.status = "Rejected";
+                }
+                lr.displayRequest();
+            }
+        }
+    }
+
+    public void viewAllRequests() {
+        for (LeaveRequest lr : requests) {
+            lr.displayRequest();
+        }
+    }
+}
+
+public class LeaveSystem {
+    public static void main(String[] args) {
+        LeaveManager lm = new LeaveManager();
+
+        Employee e1 = new Employee(1, "Alice", 10);
+        Employee e2 = new Employee(2, "Bob", 5);
+
+        lm.addEmployee(e1);
+        lm.addEmployee(e2);
+
+        lm.requestLeave(1, 3);
+        lm.requestLeave(2, 6); // Should be rejected due to low balance
+        lm.requestLeave(2, 2); // Should be approved
+
+        System.out.println("\nProcessing leave requests...");
+        lm.processRequests();
+
+        System.out.println("\nLeave requests status:");
+        lm.viewAllRequests();
+
+        System.out.println("\nUpdated employee info:");
+        lm.showEmployees();
+    }
+}
